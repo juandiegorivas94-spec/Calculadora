@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Rosa 🌸</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; }
+
+    @keyframes float {
+      0%,100%{transform:translateY(0) scale(1);opacity:.7}
+      50%{transform:translateY(-18px) scale(1.1);opacity:.3}
+    }
+    @keyframes floatB {
+      0%,100%{transform:translateY(0) scale(1);opacity:.5}
+      50%{transform:translateY(-24px) scale(1.15);opacity:.15}
+    }
+    @keyframes petalpop {
+      0%{transform:scale(0);opacity:0}
+      70%{transform:scale(1.15);opacity:1}
+      100%{transform:scale(1);opacity:1}
+    }
+    @keyframes rippleAnim {
+      to{transform:scale(3.5);opacity:0}
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(255,150,180,.5);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.6), rgba(255,180,210,.15));
+      pointer-events: none;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .calc-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 0;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #fff0f5 0%, #ffe4ef 100%);
+    }
+
+    .calc {
+      background: linear-gradient(160deg, #ffd6e8 0%, #ffb3cf 100%);
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(220,80,140,.18), 0 2px 8px rgba(220,80,140,.10);
+      width: 300px;
+      position: relative;
+      z-index: 2;
+      border: 2.5px solid #ffaacb;
+    }
+
+    .display {
+      background: linear-gradient(135deg, #fff0f8, #ffe6f2);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      border: 1.5px solid #ffb3d1;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+
+    .display .expr {
+      font-size: 13px;
+      color: #c0607a;
+      min-height: 18px;
+      word-break: break-all;
+    }
+
+    .display .num {
+      font-size: 32px;
+      font-weight: 500;
+      color: #8b1a4a;
+      word-break: break-all;
+      line-height: 1.1;
+    }
+
+    .btns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 500;
+      padding: 0;
+      height: 58px;
+      transition: transform .08s, box-shadow .08s;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:active {
+      transform: scale(.93);
+      box-shadow: 0 1px 4px rgba(200,60,120,.2) !important;
+    }
+
+    .btn-num {
+      background: linear-gradient(145deg, #fff0f8, #ffd6ea);
+      color: #8b1a4a;
+      box-shadow: 0 3px 0 #ffaacc, 0 4px 8px rgba(220,80,140,.12);
+    }
+    .btn-num:hover { background: linear-gradient(145deg, #ffe8f5, #ffbedd); }
+
+    .btn-op {
+      background: linear-gradient(145deg, #ffb3cf, #ff85b0);
+      color: #fff;
+      box-shadow: 0 3px 0 #d45e8a, 0 4px 8px rgba(200,60,120,.18);
+    }
+    .btn-op:hover { background: linear-gradient(145deg, #ffc5d9, #ff9cc4); }
+
+    .btn-eq {
+      background: linear-gradient(145deg, #ff6fa8, #e8427a);
+      color: #fff;
+      box-shadow: 0 3px 0 #9e2250, 0 4px 8px rgba(200,60,120,.22);
+    }
+    .btn-eq:hover { background: linear-gradient(145deg, #ff85b5, #f05490); }
+
+    .btn-clear {
+      background: linear-gradient(145deg, #ffcce3, #ff99c0);
+      color: #8b1a4a;
+      box-shadow: 0 3px 0 #e07098, 0 4px 8px rgba(220,80,140,.12);
+    }
+    .btn-clear:hover { background: linear-gradient(145deg, #ffdcea, #ffaacf); }
+
+    .btn-zero { grid-column: span 2; }
+
+    .rose { position: absolute; pointer-events: none; }
+
+    .calc-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #c0607a;
+      text-align: center;
+      margin-bottom: 12px;
+      letter-spacing: .5px;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.5);
+      transform: scale(0);
+      animation: rippleAnim .4s ease-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calc-wrap" id="wrap">
+
+  <!-- Burbujas flotantes -->
+  <div class="bubble" style="width:38px;height:38px;left:8%;top:12%;animation-duration:3.5s;animation-delay:0s;"></div>
+  <div class="bubble" style="width:22px;height:22px;left:75%;top:8%;animation-duration:5s;animation-delay:1s;"></div>
+  <div class="bubble" style="width:50px;height:50px;left:85%;top:35%;animation-duration:4.2s;animation-delay:.5s;"></div>
+  <div class="bubble" style="width:18px;height:18px;left:15%;top:70%;animation-duration:3.8s;animation-delay:1.5s;"></div>
+  <div class="bubble" style="width:30px;height:30px;left:60%;top:78%;animation-duration:4.8s;animation-delay:.3s;"></div>
+  <div class="bubble" style="width:14px;height:14px;left:45%;top:90%;animation-duration:3.2s;animation-delay:2s;"></div>
+  <div class="bubble" style="width:26px;height:26px;left:5%;top:45%;animation-duration:5.5s;animation-delay:.8s;"></div>
+
+  <!-- Rositas decorativas -->
+  <svg class="rose" style="left:2%;top:5%;width:52px;height:52px;animation:petalpop .6s ease .1s both;" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="10" fill="#e8426e" opacity=".9"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#f06090" opacity=".85" transform="rotate(0 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#f06090" opacity=".8" transform="rotate(45 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#e8508a" opacity=".8" transform="rotate(90 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#f06090" opacity=".8" transform="rotate(135 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#e8608a" opacity=".75" transform="rotate(180 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#f06090" opacity=".75" transform="rotate(225 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#e8508a" opacity=".75" transform="rotate(270 30 30)"/>
+    <ellipse cx="30" cy="16" rx="8" ry="10" fill="#f06090" opacity=".75" transform="rotate(315 30 30)"/>
+    <circle cx="30" cy="30" r="7" fill="#c0305a"/>
+  </svg>
+
+  <svg class="rose" style="right:3%;top:10%;width:44px;height:44px;animation:petalpop .6s ease .3s both;" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="10" fill="#ff6a9e"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ffaacc" transform="rotate(0 30 30)"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ff88bb" transform="rotate(60 30 30)"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ffaacc" transform="rotate(120 30 30)"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ff88bb" transform="rotate(180 30 30)"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ffaacc" transform="rotate(240 30 30)"/>
+    <ellipse cx="30" cy="17" rx="7" ry="9" fill="#ff88bb" transform="rotate(300 30 30)"/>
+    <circle cx="30" cy="30" r="6" fill="#e8427a"/>
+  </svg>
+
+  <svg class="rose" style="left:1%;bottom:18%;width:40px;height:40px;animation:petalpop .6s ease .5s both;" viewBox="0 0 60 60">
+    <ellipse cx="30" cy="17" rx="8" ry="10" fill="#ffc0db" transform="rotate(0 30 30)"/>
+    <ellipse cx="30" cy="17" rx="8" ry="10" fill="#ffaacc" transform="rotate(72 30 30)"/>
+    <ellipse cx="30" cy="17" rx="8" ry="10" fill="#ffc0db" transform="rotate(144 30 30)"/>
+    <ellipse cx="30" cy="17" rx="8" ry="10" fill="#ffaacc" transform="rotate(216 30 30)"/>
+    <ellipse cx="30" cy="17" rx="8" ry="10" fill="#ffc0db" transform="rotate(288 30 30)"/>
+    <circle cx="30" cy="30" r="8" fill="#e85080"/>
+  </svg>
+
+  <svg class="rose" style="right:2%;bottom:20%;width:48px;height:48px;animation:petalpop .6s ease .2s both;" viewBox="0 0 60 60">
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#f080a8" transform="rotate(0 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#e86090" transform="rotate(51 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#f080a8" transform="rotate(102 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#e86090" transform="rotate(153 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#f080a8" transform="rotate(204 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#e86090" transform="rotate(255 30 30)"/>
+    <ellipse cx="30" cy="16" rx="9" ry="11" fill="#f080a8" transform="rotate(306 30 30)"/>
+    <circle cx="30" cy="30" r="9" fill="#c03060"/>
+  </svg>
+
+  <!-- Calculadora -->
+  <div class="calc">
+    <div class="calc-title">🌸 Calculadora Rosa 🌸</div>
+    <div class="display">
+      <div class="expr" id="expr"></div>
+      <div class="num" id="display">0</div>
+    </div>
+    <div class="btns" id="btns">
+      <button class="btn btn-clear" data-val="C">C</button>
+      <button class="btn btn-clear" data-val="+/-">±</button>
+      <button class="btn btn-clear" data-val="%">%</button>
+      <button class="btn btn-op" data-val="÷">÷</button>
+
+      <button class="btn btn-num" data-val="7">7</button>
+      <button class="btn btn-num" data-val="8">8</button>
+      <button class="btn btn-num" data-val="9">9</button>
+      <button class="btn btn-op" data-val="×">×</button>
+
+      <button class="btn btn-num" data-val="4">4</button>
+      <button class="btn btn-num" data-val="5">5</button>
+      <button class="btn btn-num" data-val="6">6</button>
+      <button class="btn btn-op" data-val="-">−</button>
+
+      <button class="btn btn-num" data-val="1">1</button>
+      <button class="btn btn-num" data-val="2">2</button>
+      <button class="btn btn-num" data-val="3">3</button>
+      <button class="btn btn-op" data-val="+">+</button>
+
+      <button class="btn btn-num btn-zero" data-val="0">0</button>
+      <button class="btn btn-num" data-val=".">.</button>
+      <button class="btn btn-eq" data-val="=">=</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let cur = '0', prev = '', op = null, reset = false;
+  const disp = document.getElementById('display');
+  const expr = document.getElementById('expr');
+
+  let actx = null;
+  function ensureCtx(){
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    return actx;
+  }
+
+  function bubbleSound(freq){
+    try{
+      const ctx = ensureCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(freq, ctx.currentTime);
+      filter.Q.value = 8;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * 1.5, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.6, ctx.currentTime + 0.18);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    }catch(e){}
+  }
+
+  function popBubbleAnim(btn){
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    r.style.cssText = `width:${btn.offsetWidth}px;height:${btn.offsetWidth}px;top:${btn.offsetHeight/2 - btn.offsetWidth/2}px;left:0;`;
+    btn.appendChild(r);
+    setTimeout(()=>r.remove(), 450);
+
+    const wrap = document.getElementById('wrap');
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const sz = 14 + Math.random()*22;
+    const rect = btn.getBoundingClientRect();
+    const wrect = wrap.getBoundingClientRect();
+    const bx = rect.left - wrect.left + rect.width/2 - sz/2;
+    const by = rect.top - wrect.top - sz;
+    b.style.cssText = `width:${sz}px;height:${sz}px;left:${bx}px;top:${by}px;animation:floatB ${2+Math.random()*2}s ease-in-out forwards;`;
+    wrap.appendChild(b);
+    setTimeout(()=>b.remove(), 4000);
+  }
+
+  function updateDisplay(){
+    let s = cur;
+    if(s.length > 12) s = parseFloat(s).toExponential(4);
+    disp.textContent = s;
+  }
+
+  function calc(){
+    const a = parseFloat(prev), b = parseFloat(cur);
+    if(isNaN(a)||isNaN(b)) return b;
+    if(op==='÷') return b===0 ? 'Error' : a/b;
+    if(op==='×') return a*b;
+    if(op==='-') return a-b;
+    if(op==='+') return a+b;
+    return b;
+  }
+
+  document.getElementById('btns').addEventListener('click', function(e){
+    const btn = e.target.closest('.btn');
+    if(!btn) return;
+    const val = btn.dataset.val;
+
+    const freqs = {'1':523,'2':587,'3':659,'4':698,'5':784,'6':880,'7':988,'8':1047,'9':1175,'0':466,'.':1319,'C':392,'+/-':440,'%':494,'÷':622,'×':740,'-':554,'+':660,'=':800};
+    bubbleSound(freqs[val]||600);
+    popBubbleAnim(btn);
+
+    if(val==='C'){ cur='0'; prev=''; op=null; reset=false; expr.textContent=''; }
+    else if(val==='+/-'){ cur = cur.startsWith('-') ? cur.slice(1) : (cur==='0'?'0':'-'+cur); }
+    else if(val==='%'){ cur = String(parseFloat(cur)/100); }
+    else if(['÷','×','-','+'].includes(val)){
+      if(op && !reset){ const r = calc(); cur = typeof r==='number'? String(+r.toFixed(10).replace(/\.?0+$/,'')) : r; }
+      prev = cur; op = val; reset = true;
+      expr.textContent = prev + ' ' + val;
+    }
+    else if(val==='='){
+      if(!op) return;
+      expr.textContent = prev + ' ' + op + ' ' + cur + ' =';
+      const r = calc();
+      cur = typeof r==='number' ? String(+r.toFixed(10).replace(/\.?0+$/,'')) : r;
+      op = null; prev = ''; reset = false;
+    }
+    else{
+      if(reset){ cur='0'; reset=false; }
+      if(val==='.'){ if(!cur.includes('.')) cur += '.'; }
+      else{ cur = cur==='0' ? val : cur+val; }
+      if(op) expr.textContent = prev + ' ' + op;
+    }
+    updateDisplay();
+  });
+})();
+</script>
+
+</body>
+</html>
